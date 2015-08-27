@@ -1,0 +1,441 @@
+#include <stdlib.h>
+#include <string.h>
+#include <GL/glut.h>
+#include<stdio.h>
+#include<string.h>
+#include<conio.h>
+#define EDGE 12
+int choice;
+static GLfloat vertices[][3] = {
+	{ -1.0, -1.0, -1.0 }, { -1.0, -1.0, 1.0 },
+	{ -1.0, 1.0, -1.0 }, { -1.0, 1.0, 1.0 }, { 1.0, -1.0, -1.0 },
+	{ 1.0, -1.0, 1.0 }, { 1.0, 1.0, -1.0 }, { 1.0, 1.0, 1.0 },
+	{ 0.0, 0.0, 0.0 } };
+static GLfloat offsets[][3] = {
+	{ 0.0, 0.0, -1.0 }, { -1.0, 0.0, 0.0 }, { 0.0, -1.0, 0.0 },
+	{ 0.0, 0.0, 1.0 }, { 1.0, 0.0, 0.0 }, { 0.0, 1.0, 0.0 } };
+
+static GLfloat colors[][3] = {
+	{ 1.0, 0.0, 0.0 }, { 1.0, 1.0, 0.0 }, { 0.0, 1.0, 0.0 },
+	{ 0.0, 0.0, 1.0 }, { 1.0, 0.0, 1.0 }, { 0.0, 1.0, 1.0 } };
+static GLfloat theta[] = { 0.0, 0.0, 0.0 };
+static GLint axis = 2;
+static double colorset = 0.1;
+static double offset = 0.2;
+static double rotation = 0.5;
+static int wireframe = 0;
+static int hide = 0;
+
+#define TETRA 1
+#define PYR 2
+#define QUIT 3
+
+
+
+static void triangle(int color, int a, int b, int c, int off)
+{
+	int i, j, k;
+	GLfloat overtices[3][3];
+	GLfloat ocolors[3][3];
+	k = a;
+	for (i = 0; i<3; i++)
+	{
+		if (i == 1) k = b;
+		if (i == 2) k = c;
+		for (j = 0; j<3; j++)
+		{
+			overtices[i][j] = vertices[k][j] + offset*vertices[off][j];
+			ocolors[i][j] = colors[color][j] - colorset*(double)i;
+		}
+	}
+	if (!wireframe)
+	{
+		glBegin(GL_POLYGON);
+		glColor3fv(ocolors[0]);
+		glVertex3fv(overtices[0]);
+		glColor3fv(ocolors[1]);
+		glVertex3fv(overtices[1]);
+		glColor3fv(ocolors[2]);
+		glVertex3fv(overtices[2]);
+		glEnd();
+	}
+	else
+	{
+		glLineWidth(2.0);
+		glBegin(GL_LINE_LOOP);
+		glColor3fv(colors[color]);
+		glVertex3fv(overtices[0]);
+		glVertex3fv(overtices[1]);
+		//glVertex3fv(overtices[0]);
+		glVertex3fv(overtices[2]);
+		//glVertex3fv(overtices[1]);
+		//glVertex3fv(overtices[2]);
+		glEnd();
+	}
+}
+static void triangle1(int color, int a, int b, int c, int off)
+{
+	int i, j, k;
+	GLfloat overtices[3][3];
+	GLfloat ocolors[3][3];
+	k = a;
+	for (i = 0; i<3; i++)
+	{
+		if (i == 1) k = b;
+		if (i == 2) k = c;
+		for (j = 0; j<3; j++)
+		{
+			overtices[i][j] = vertices[k][j] + offset*offsets[off][j];
+			//overtices[i][j] = vertices[k][j] + offset*vertices[off][j];
+			ocolors[i][j] = colors[color][j] - colorset*(double)i;
+		}
+	}
+	if (!wireframe)
+	{
+		glBegin(GL_POLYGON);
+		glColor3fv(ocolors[0]);
+		glVertex3fv(overtices[0]);
+		glColor3fv(ocolors[1]);
+		glVertex3fv(overtices[1]);
+		glColor3fv(ocolors[2]);
+		glVertex3fv(overtices[2]);
+		glEnd();
+	}
+	else
+	{
+		glLineWidth(2.0);
+		glBegin(GL_LINES);
+		glColor3fv(colors[color]);
+		glVertex3fv(overtices[0]);
+		glVertex3fv(overtices[1]);
+		glVertex3fv(overtices[0]);
+		glVertex3fv(overtices[2]);
+		glVertex3fv(overtices[1]);
+		glVertex3fv(overtices[2]);
+		glEnd();
+	}
+}
+static void square(int color, int a, int b, int c, int d, int off)
+{
+	int i, j, k;
+	GLfloat overtices[4][3];
+	GLfloat ocolors[4][3];
+	k = a;
+	for (i = 0; i<4; i++)
+	{
+		if (i == 1) k = b;
+		if (i == 2) k = c;
+		if (i == 3) k = d;
+		for (j = 0; j<3; j++)
+		{
+			overtices[i][j] = vertices[k][j] + offset*offsets[off][j];
+			//overtices[i][j] = vertices[k][j] + offset*vertices[off][j];
+			ocolors[i][j] = colors[color][j] - colorset*(double)i;
+		}
+	}
+	if (!wireframe)
+	{
+		glBegin(GL_POLYGON);
+		glColor3fv(ocolors[0]);
+		glVertex3fv(overtices[0]);
+		glColor3fv(ocolors[1]);
+		glVertex3fv(overtices[1]);
+		glColor3fv(ocolors[2]);
+		glVertex3fv(overtices[2]);
+		glColor3fv(ocolors[3]);
+		glVertex3fv(overtices[3]);
+		glEnd();
+	}
+	else
+	{
+		glLineWidth(2.0);
+		glBegin(GL_LINES);
+		glColor3fv(colors[color]);
+		glVertex3fv(overtices[0]);
+		glVertex3fv(overtices[1]);
+		glVertex3fv(overtices[1]);
+		glVertex3fv(overtices[2]);
+		glVertex3fv(overtices[2]);
+		glVertex3fv(overtices[3]);
+		glVertex3fv(overtices[3]);
+		glVertex3fv(overtices[0]);
+		glEnd();
+	}
+}
+static void pyramid(int color, int a, int b, int c, int d, int e, int off)
+{
+
+	triangle1(color, a, b, e, off);
+	triangle1(color, b, c, e, off);
+	triangle1(color, c, d, e, off);
+	triangle1(color, d, a, e, off);
+	square(color, a, b, c, d, off);
+} /* end pyramid */
+
+static void colorsplit_cube1(void)
+{
+
+	pyramid(0, 0, 2, 6, 4, 8, 0);
+	pyramid(1, 1, 3, 2, 0, 8, 1);
+	pyramid(2, 0, 4, 5, 1, 8, 2);
+	pyramid(3, 5, 7, 3, 1, 8, 3);
+	pyramid(4, 4, 6, 7, 5, 8, 4);
+	pyramid(5, 3, 7, 6, 2, 8, 5);
+}
+
+static void tetrahedron(int color, int a, int b, int c, int d, int off)
+{
+
+	triangle(color, a, b, c, off);
+	triangle(color, b, a, d, off);
+	triangle(color, b, d, c, off);
+	triangle(color, d, c, a, off);
+}
+
+static void colorsplit_cube(void)
+{
+
+	tetrahedron(0, 0, 2, 6, 3, 2);
+	tetrahedron(1, 3, 7, 6, 5, 7);
+	tetrahedron(2, 0, 6, 4, 5, 4);
+	tetrahedron(3, 0, 1, 5, 3, 1);
+	tetrahedron(4, 3, 0, 5, 6, 8);
+}
+
+static void printstring(void *font, char *string)
+{
+	int len, i;
+	len = (int)strlen(string);
+	for (i = 0; i < len; i++)
+		glutBitmapCharacter(font, string[i]);
+}
+
+static void printhelp(void)
+{
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	glOrtho(0, 500, 0, 500, -1, 1);
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+	glColor3f(1.0, 1.0, 1.0);
+	if (!hide)
+	{
+		glRasterPos2i(150, 480);
+		if (choice == 1)
+			printstring(GLUT_BITMAP_HELVETICA_18, "Cube split into five Tetrahedrons");
+		else if (choice == 2)
+			printstring(GLUT_BITMAP_HELVETICA_18, "Cube split into five Pyramids");
+	}
+	glRasterPos2i(5, 77);
+	printstring(GLUT_BITMAP_HELVETICA_12, "Mouse Right Click to Get Menu");
+	glRasterPos2i(5, 65);
+	printstring(GLUT_BITMAP_HELVETICA_12, "O or o changes offset");
+	glRasterPos2i(5, 53);
+	printstring(GLUT_BITMAP_HELVETICA_12, "F or f changes fast rotation");
+	glRasterPos2i(5, 41);
+	printstring(GLUT_BITMAP_HELVETICA_12, "C or c changes color blending");
+	glRasterPos2i(5, 29);
+	printstring(GLUT_BITMAP_HELVETICA_12, "W or w changes to wire frame");
+	glRasterPos2i(5, 17);
+	printstring(GLUT_BITMAP_HELVETICA_12, "arrow keys change rotation axis");
+	glRasterPos2i(5, 5);
+	printstring(GLUT_BITMAP_HELVETICA_12, "Keys h,j,k select the rotation axis");
+	glRasterPos2i(375, 65);
+	printstring(GLUT_BITMAP_HELVETICA_12, "PREPARED BY:");
+	glRasterPos2i(375, 50);
+	printstring(GLUT_BITMAP_HELVETICA_12, "SURAJ MITTAL");
+	glRasterPos2i(375, 35);
+	printstring(GLUT_BITMAP_HELVETICA_12, "SHIVENDRA SHARAN");
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+}
+
+static void display(void)
+{
+
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glLoadIdentity();
+	glRotatef(theta[0], 1.0, 0.0, 0.0);
+	glRotatef(theta[1], 0.0, 1.0, 0.0);
+	glRotatef(theta[2], 0.0, 0.0, 1.0);
+	colorsplit_cube();
+	printhelp();
+	glFlush();
+	glutSwapBuffers();
+}
+static void display1(void)
+{
+
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glLoadIdentity();
+	glRotatef(theta[0], 1.0, 0.0, 0.0);
+	glRotatef(theta[1], 0.0, 1.0, 0.0);
+	glRotatef(theta[2], 0.0, 0.0, 1.0);
+	colorsplit_cube1();
+	printhelp();
+	glFlush();
+	glutSwapBuffers();
+}
+
+
+static void spinSplit_Cube(void)
+{
+	theta[axis] = theta[axis] + rotation;
+	if (theta[axis] > 360.0) theta[axis] = theta[axis] - 360.0;
+
+	glutPostRedisplay();
+}
+
+
+void menu(int key)
+{
+	switch (key)
+	{
+	case TETRA:
+		glutChangeToMenuEntry(1, "Split Cube to Pyramid", PYR);
+		glutDisplayFunc(display);
+		break;
+	case PYR:
+		glutChangeToMenuEntry(1, "Split Cube to TetraHedron", TETRA);
+		glutDisplayFunc(display1);
+		break;
+	case QUIT:
+		exit(0);
+	}
+}
+
+
+static void keyboard(unsigned char key, int x, int y)
+{
+	switch (key)
+	{
+	case 'O':
+		offset = offset + 0.05;
+		if (offset>0.75) offset = 0.75;
+		break;
+	case 'o':
+		offset = offset - 0.05;
+		if (offset<0.0) offset = 0.0;
+		break;
+	case 'C':
+		colorset = colorset + 0.02;
+		if (colorset>0.5) colorset = 0.5;
+		break;
+	case 'c':
+		colorset = colorset - 0.02;
+		if (colorset<0.0) colorset = 0.0;
+		break;
+	case 'F':
+		rotation = rotation + 0.05;
+		if (rotation>5.0) rotation = 5.0;
+		break;
+	case 'f':
+		rotation = rotation - 0.05;
+		if (rotation<0.0) rotation = 0.0;
+		break;
+	case 'W':
+		wireframe = 1;
+		break;
+	case 'w':
+		wireframe = 0;
+		break;
+	case 'h':
+	case 'H': axis = 0; break;
+	case 'j':
+	case 'J': axis = 1; break;
+	case 'k':
+	case 'K':axis = 2; break;
+	}
+}
+
+static void special(int k, int x, int y)
+{
+	switch (k)
+	{
+	case GLUT_KEY_LEFT:
+		axis = 1;
+		break;
+	case GLUT_KEY_RIGHT:
+		axis = 2;
+		break;
+	case GLUT_KEY_DOWN:
+		axis = 0;
+		break;
+	case GLUT_KEY_UP:
+		//wireframe = 1 - wireframe;
+		break;
+	}
+}
+
+static void myReshape(int w, int h)
+{
+	glViewport(0, 0, w, h);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	if (w <= h)
+		glOrtho(-2.5, 2.5, -2.5 * (GLfloat)h / (GLfloat)w, 2.5 * (GLfloat)h / (GLfloat)w, -10.0, 10.0);
+	else
+		glOrtho(-2.5 * (GLfloat)w / (GLfloat)h, 2.5 * (GLfloat)w / (GLfloat)h, -2.5, 2.5,
+		-10.0, 10.0);
+	glMatrixMode(GL_MODELVIEW);
+}
+
+int main(int argc, char *argv[])
+{
+	glutInit(&argc, argv);
+
+	printf("\tSURAJ MITTAL\tSHIVENDRA SHARAN\n");
+	printf("\t1MV12CS113\t1MV12CS099     \n");
+	printf("\n\t1:split cube to tetrahedron\n\t2:split cube to pyramid\n\t");
+	scanf_s("%d", &choice);
+	if (argc>1)
+	{
+		if (argv[1][0] == 'x' || argv[1][1] == 'x')
+		{
+			colorset = 0.0;
+			offset = 0.0;
+			rotation = 5.0;
+			hide = 1;
+		}
+	}
+
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+	glutInitWindowSize(500, 500);
+	glutCreateWindow("split_cube");
+	glutReshapeFunc(myReshape);
+	switch (choice)
+	{
+	case 1:
+		glutDisplayFunc(display);
+		break;
+	case 2:
+		glutDisplayFunc(display1);
+		break;
+	default:
+		printf("Invalid input");
+		exit(0);
+
+	}
+	glutIdleFunc(spinSplit_Cube);
+	glutKeyboardFunc(keyboard);
+	glutSpecialFunc(special);
+	glEnable(GL_DEPTH_TEST);
+	glClearColor(0.0,0.0,0.0,0.0);
+	glutCreateMenu(menu);
+	if (choice == 1)
+		glutAddMenuEntry("Split Cube to Pyramid", PYR);
+	else
+		glutAddMenuEntry("Split Cube into TetraHedron", TETRA);
+
+	glutAddMenuEntry("Quit", QUIT);
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
+	glutMainLoop();
+	return 0;
+}
+
